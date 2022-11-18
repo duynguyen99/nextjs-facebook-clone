@@ -1,13 +1,13 @@
 import { compare, hash } from "bcrypt";
 
-export async function hashPassword(password: string, salt: number) {
-  return await hash(password, salt);
+export async function hashData(data: string, salt: number) {
+  if (!data) {
+    return "";
+  }
+  return await hash(data, salt);
 }
 
-export async function verifyPassword(
-  password: string,
-  passwordEncrypted: string
-) {
-  const isValid = await compare(password, passwordEncrypted);
+export async function verifyData(data: string, dataEncrypted: string) {
+  const isValid = await compare(data, dataEncrypted);
   return isValid;
 }

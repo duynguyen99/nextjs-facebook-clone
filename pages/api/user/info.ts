@@ -3,21 +3,20 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { connectToDatabase } from "../../../helpers/connection";
 import { ErrorResponse } from "../../../types/Response";
 import { User } from "../../../types/Base";
-import { compare } from "bcrypt";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<User | ErrorResponse>
 ) {
-  const { email, password } = req.body;
-  if(req.method !== 'POST'){
+  if(req.method !== 'GET'){
     return res.status(400).json({
-      message: "Only support POST method",
+      message: "Only support GET method",
     });
   }
-  if (!email || !password) {
+  const { id } = req.body;
+  if (!id) {
     return res.status(400).json({
-      message: "email or password can not empty!",
+      message: "id can not empty",
     });
   }
 
@@ -30,21 +29,14 @@ export default async function handler(
 
   const database = client.db();
   const userTable = database.collection("users");
-  const currentUser = await userTable.findOne({ email });
+  const currentUser = (await userTable.findOne({ _id: id })) as unknown as User;
 
   if (!currentUser) {
     client.close();
     return res.status(400).json({
-      message: "email or password is incorrect",
-    });
-  }
-  const equal = await compare(password, currentUser.password);
-  if (!equal) {
-    client.close();
-    return res.status(400).json({
-      message: "email or password is incorrect",
+      message: "User not found",
     });
   }
 
-  return res.status(200).json({ message: "login success!" });
+  return res.status(200).json(currentUser);
 }

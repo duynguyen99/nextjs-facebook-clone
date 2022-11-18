@@ -1,21 +1,22 @@
 import React from "react";
 import { RecentUserProps } from "../types/Props";
-import { RecentUserLayout } from "./Login";
+import { LoginRecentUser } from "./layouts/Login";
 import UserAvatar from "./UserAvatar";
 
 const RecentUser = ({ users, setSelectedUser }: RecentUserProps) => {
+  console.log('users', users)
   return (
-    <RecentUserLayout>
+    <LoginRecentUser>
       {users.map((user) => (
         <div
-          key={user.id}
+          key={user._id}
           onClick={() => setSelectedUser?.(user)}
           className="mr-4 mt-4"
         >
           <UserAvatar key={user.id} data={user} />
         </div>
       ))}
-    </RecentUserLayout>
+    </LoginRecentUser>
   );
 };
 

@@ -5,3 +5,5 @@ export const ERROR_MESSAGES = {
   isNotMatchingPassword: "This field must be match with confirm password.",
   isNotMatchingRePassword: "This field must be match with password.",
 };
+
+export const BLACK_LIST_NAV_BAR = ["/login", "/_error"];

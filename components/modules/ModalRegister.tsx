@@ -1,42 +1,42 @@
 import React, { useState } from "react";
-import { ModalRegisterProps } from "../types/Props";
-import { RegisterUserLayout } from "./Login";
 import { useForm } from "react-hook-form";
-import { User } from "../types/User";
-import Input from "./Input";
-import { EMAIL_PATTERN, ERROR_MESSAGES } from "../utils/constants";
+import { ModalRegisterProps } from "../../types/Props";
+import { User } from "../../types/Base";
+import { EMAIL_PATTERN, ERROR_MESSAGES } from "../../utils/constants";
+import Input from "../Input";
+import { LoginRegisterForm } from "../layouts/Login";
+import Button from "../Button";
 
-function ModalRegister({ onRegister }: ModalRegisterProps) {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+function ModalRegister({ onRegister, loading }: ModalRegisterProps) {
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm<User>();
-  console.log("errors", errors);
+
   const onSubmitForm = (data: User) => {
-    setIsLoading(true);
-    fetch("/api/user/register", {
-      body: JSON.stringify(data),
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => {
-        if (res.status === 201) {
-          
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    onRegister(data);
   };
+
   const watchAll = watch();
   return (
-    <RegisterUserLayout>
+    <LoginRegisterForm>
       <form onSubmit={handleSubmit(onSubmitForm)}>
+        <Input
+          type="text"
+          placeholder="Full Name"
+          errorText={errors.email?.message}
+          registerForm={{
+            ...register("fullName", {
+              required: {
+                value: true,
+                message: "This field is required.",
+              },
+            }),
+          }}
+          className="w-80"
+        />
         <Input
           type="email"
           placeholder="Email"
@@ -53,7 +53,7 @@ function ModalRegister({ onRegister }: ModalRegisterProps) {
               },
             }),
           }}
-          className="w-80"
+          className="w-80 mt-4"
         />
         <Input
           type="password"
@@ -62,6 +62,7 @@ function ModalRegister({ onRegister }: ModalRegisterProps) {
             errors.password?.message ||
             ERROR_MESSAGES[errors.password?.type as "isNotMatchingPassword"]
           }
+          className="mt-4"
           registerForm={{
             ...register("password", {
               required: {
@@ -77,11 +78,12 @@ function ModalRegister({ onRegister }: ModalRegisterProps) {
         />
         <Input
           type="password"
-          placeholder="Password"
+          placeholder="Confirm Password"
           errorText={
             errors.rePassword?.message ||
             ERROR_MESSAGES[errors.rePassword?.type as "isNotMatchingPassword"]
           }
+          className="mt-4"
           registerForm={{
             ...register("rePassword", {
               required: {
@@ -95,16 +97,15 @@ function ModalRegister({ onRegister }: ModalRegisterProps) {
             }),
           }}
         />
-        <button
+        <Button
+          title="Sign Up"
+          className="w-fit mt-4 ml-auto mr-auto text-xl flex bg-[#42b72a] hover:bg-[#36a420]"
+          disabled={loading}
+          loading={loading}
           type="submit"
-          className="flex text-xl ml-auto mr-auto mt-4 w-fit text-white bg-[#42b72a] hover:bg-[#36a420] focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-          onClick={onRegister}
-          disabled={isLoading}
-        >
-          Sign Up
-        </button>
+        />
       </form>
-    </RegisterUserLayout>
+    </LoginRegisterForm>
   );
 }
 

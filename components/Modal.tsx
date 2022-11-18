@@ -7,6 +7,7 @@ const Modal = ({
   title,
   descriptionTitle,
   hideTitle,
+  titleClassName,
   onClose,
 }: ModalProps) => {
   return (
@@ -28,7 +29,7 @@ const Modal = ({
             </div>
             {!hideTitle && (
               <div className="pt-2 pl-6 border-b pb-4 ">
-                <div className="font-semibold text-4xl ">{title}</div>
+                <div className={`font-semibold ${titleClassName || ''}`}>{title}</div>
                 <div className="pt-1 whitespace-pre-line">
                   {descriptionTitle}
                 </div>
