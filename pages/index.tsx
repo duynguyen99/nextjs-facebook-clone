@@ -8,33 +8,29 @@ import NewPost from "../components/NewPost";
 import { Post } from "../types/Base";
 import Cookies from "cookies";
 import { toast } from "react-toastify";
+import { createNewPost } from "../helpers/api";
 
 export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
-  const onAddNewPost = (data: Post, callback: () => void) => {
-    fetch("/api/post/create", {
-      method: "POST",
-      body: JSON.stringify({ ...data }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => {
-        if (res.status === 201) {
-          toast.success('Created Post!')
-          callback();
-          setPosts([]);
-          getAllPosts();
-        }
-      })
-      .catch(() => {
-        //TODO: implement handle error here
-      });
+  const [isLoadingGetPosts, setIsLoadingGetPost] = useState<boolean>(false);
+
+  const onAddNewPost = async (data: Post, callback: () => void) => {
+    const response = await createNewPost(data);
+    if (response.ok) {
+      toast.success("Created Post!");
+      callback();
+      setPosts([]);
+      getAllPosts();
+      return;
+    }
+    //TODO: implement handle error here
   };
 
   const getAllPosts = async () => {
+    setIsLoadingGetPost(true);
     const res = await fetch("/api/post/list");
     const resJson = await res.json();
+    setIsLoadingGetPost(false);
     setPosts(resJson);
   };
 
@@ -49,30 +45,20 @@ export default function HomePage() {
       <HomeLayout>
         <HomePost>
           <NewPost onAdd={onAddNewPost} />
-          <Posts posts={posts} />
+          <Posts posts={posts} isLoading={isLoadingGetPosts} />
         </HomePost>
       </HomeLayout>
     </>
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession({ req: context.req });
-
-  //cached user logged in
-  const email = session?.user?.email;
-  if (email) {
-    const cookies = new Cookies(context.req, context.res);
-    const users = cookies.get("users");
-    const usersJson = JSON.parse(users || "[]") as string[];
-    const isExisted = usersJson.find(userEmail => userEmail === email);
-
-    if (!isExisted) {
-      const usersCaching = [...usersJson, email];
-      cookies.set("users", JSON.stringify(usersCaching));
-    }
-  }
-
+export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
+  const session = await getSession({ req: req });
+  //cache data
+  res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=10, stale-while-revalidate=59'
+  )
   if (!session) {
     return {
       redirect: {
@@ -82,6 +68,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
+  const email = session?.user?.email;
+  if (email) {
+    const cookies = new Cookies(req, res);
+    const users = cookies.get("users");
+    const usersJson = JSON.parse(users || "[]") as string[];
+    const isExisted = usersJson.find((userEmail) => userEmail === email);
+
+    if (!isExisted) {
+      const usersCaching = [...usersJson, email];
+      cookies.set("users", JSON.stringify(usersCaching));
+    }
+  }
   return {
     props: {
       session,

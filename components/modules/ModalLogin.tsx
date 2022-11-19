@@ -2,31 +2,43 @@ import Image from "next/image";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { ModalLoginProps } from "../../types/Props";
+import { ERROR_MESSAGES } from "../../utils/constants";
 import Button from "../Button";
 import Input from "../Input";
 
-function ModalLogin({ user, loading, onLogin }: ModalLoginProps) {
+function ModalLogin({
+  user,
+  loading,
+  isErrorInCorrectPasswordModal,
+  onLogin,
+}: ModalLoginProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<{password: string}>();
+  } = useForm<{ password: string }>();
 
   return (
     <div className="flex flex-col items-center">
       <Image
-        src={user.avatar || ""}
+        src={user?.avatar || ""}
         width={500}
         height={500}
         alt="avatar"
         className="rounded-full w-40 h-40"
       />
-      <div className="mt-2">{user.fullName}</div>
+      <div className="mt-2">{user?.fullName}</div>
       <div className="mt-4 w-96 flex flex-col items-center">
-      <Input
+        <Input
           type="password"
           placeholder="Password"
-          errorText={errors?.password ? "Password is required" : ''}
+          errorText={
+            errors?.password
+              ? "Password is required"
+              : isErrorInCorrectPasswordModal
+              ? ERROR_MESSAGES.incorrectPassword
+              : ""
+          }
           registerForm={{
             ...register("password", {
               required: true,
@@ -34,7 +46,7 @@ function ModalLogin({ user, loading, onLogin }: ModalLoginProps) {
           }}
         />
         <Button
-          title={loading ? 'Logging In' : 'Log in'}
+          title={loading ? "Logging In" : "Log in"}
           className="mt-4 h-12 w-full text-lg"
           loading={loading}
           disabled={loading}

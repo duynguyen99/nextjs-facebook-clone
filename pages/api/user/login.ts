@@ -10,7 +10,7 @@ export default async function handler(
   res: NextApiResponse<User | ErrorResponse>
 ) {
   const { email, password } = req.body;
-  if(req.method !== 'POST'){
+  if (req.method !== "POST") {
     return res.status(400).json({
       message: "Only support POST method",
     });
@@ -38,7 +38,7 @@ export default async function handler(
       message: "email or password is incorrect",
     });
   }
-  const equal = await compare(password, currentUser.password);
+  const equal = await compare(password, currentUser?.password);
   if (!equal) {
     client.close();
     return res.status(400).json({

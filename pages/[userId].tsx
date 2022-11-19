@@ -1,46 +1,92 @@
-import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
-import React from "react";
-import { getUserById } from "../helpers/api";
+import { GetStaticProps } from "next";
+import React, { useMemo, useState } from "react";
+import { UserProfilePageProps } from "../types/Props";
+import { findUserById } from "./api/user/info";
+import { getUsers } from "./api/user/list";
+import Head from "next/head";
+import { HomeLayout, HomePost } from "../components/layouts/Home";
+import Posts from "../components/modules/Posts";
+import NewPost from "../components/NewPost";
+import { toast } from "react-toastify";
+import { createNewPost, getUserPosts } from "../helpers/api";
+import { Post, User } from "../types/Base";
+import { useSession } from "next-auth/react";
+import { getUserPostsById } from "./api/post/list";
+const UserProfilePage = ({ user, posts }: UserProfilePageProps) => {
+  const { data: session } = useSession();
+  const sessionUser = session?.user as User;
+  const [isLoadingGetPosts, setIsLoadingGetPost] = useState<boolean>(false);
+  const [userPosts, setUserPosts] = useState<Post[]>(posts);
 
-const UserProfilePage = () => {
+  const getAllPosts = async () => {
+    setIsLoadingGetPost(true);
+    const res = await getUserPosts(user.id || "");
+    if (res.ok) {
+      const postsJson = (await res.json()) as Post[];
+      setIsLoadingGetPost(false);
+      setUserPosts(postsJson);
+      return;
+    }
+    //TODO: implement handle error here
+  };
+
+  const onAddNewPost = async (data: Post, callback: () => void) => {
+    const response = await createNewPost(data);
+    if (response.ok) {
+      toast.success("Created Post!");
+      callback();
+      setUserPosts([]);
+      getAllPosts();
+      return;
+    }
+    //TODO: implement handle error here
+  };
+
+  const isAuthorized = sessionUser && sessionUser.id === user.id;
+  const postsRender = useMemo(() => {
+    return userPosts.map((post) => ({
+      ...post,
+      avatar: user.avatar,
+      fullName: user.fullName,
+    }));
+  }, [user.avatar, user.fullName, userPosts]);
   return (
-    <div className="h-screen z-20">
-      <h1>profile user</h1>
-    </div>
+    <>
+      <Head>
+        <title>{user.fullName}</title>
+      </Head>
+      <HomeLayout>
+        <HomePost>
+          {isAuthorized && <NewPost onAdd={onAddNewPost} />}
+          <Posts posts={postsRender} isLoading={isLoadingGetPosts} />
+        </HomePost>
+      </HomeLayout>
+    </>
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { params, res } = context;
-  //cache data
-  res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=60, stale-while-revalidate=180'
-  )
-  const session = await getSession({ req: context.req });
+export const getStaticProps: GetStaticProps = async (context) => {
+  const { params } = context;
+
   const { userId } = params as { userId: string };
-
-  if (!session) {
-    return {
-      props: {},
-      redirect: {
-        destination: `/people/${userId}`,
-      },
-    };
-  }
-
-  const response = await getUserById(userId);
-  const userInfoJson = await response.json();
-
-  delete userInfoJson.password;
+  const user = await findUserById(userId);
+  const posts = await getUserPostsById(userId);
   return {
     props: {
-      metadata: {
-        user: session?.user,
-      },
+      user,
+      posts,
     },
+    revalidate: 60, //seconds
   };
 };
+
+export async function getStaticPaths() {
+  const users = await getUsers();
+  const userIds = users.map((user) => user._id);
+  return {
+    paths: userIds.map((userId) => ({ params: { userId } })),
+    fallback: false,
+  };
+}
 
 export default UserProfilePage;

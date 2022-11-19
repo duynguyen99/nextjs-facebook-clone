@@ -4,16 +4,15 @@ import { LoginRecentUser } from "./layouts/Login";
 import UserAvatar from "./UserAvatar";
 
 const RecentUser = ({ users, setSelectedUser }: RecentUserProps) => {
-  console.log('users', users)
   return (
     <LoginRecentUser>
-      {users.map((user) => (
+      {users?.map((user) => (
         <div
           key={user._id}
           onClick={() => setSelectedUser?.(user)}
           className="mr-4 mt-4"
         >
-          <UserAvatar key={user.id} data={user} />
+          <UserAvatar key={user?.id} data={user} />
         </div>
       ))}
     </LoginRecentUser>

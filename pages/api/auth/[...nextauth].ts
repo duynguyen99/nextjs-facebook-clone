@@ -25,15 +25,17 @@ export default NextAuth({
         }
         const isValidPassword = await verifyData(
           credentials?.password || "",
-          user.password
+          user?.password
         );
         if (!isValidPassword) {
           throw new Error("Password is incorrect");
         }
         client.close();
-        return { ...user, id: user._id as unknown as string };
+        return { ...user, id: user?._id as unknown as string };
       },
       credentials: {},
     }),
   ],
+  // secret key for encrypt JWT
+  secret: process.env.NEXTAUTH_SECRET,
 });

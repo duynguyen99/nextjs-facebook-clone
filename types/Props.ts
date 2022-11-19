@@ -29,15 +29,17 @@ export type ModalLoginProps = {
   user: User;
   onLogin: (password: string) => void;
   loading?: boolean;
+  isErrorInCorrectPasswordModal?: boolean;
 };
 
 export type ModalAddNewPostProps = {
   onSubmit: (data: Post, callback: () => void) => void;
   onCloseModal: () => void;
+  userData: User;
 };
 
 export type ModalRegisterProps = {
-  onRegister: (data: User) => void;
+  onRegister: (data: User, callback?: (msg: string) => void) => void;
   loading?: boolean;
 };
 
@@ -50,6 +52,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   title: string;
   className?: string;
   loading?: boolean;
+  buttonType?: "primary" | "secondary";
 }
 
 export type LoginPageProps = {
@@ -80,5 +83,15 @@ export type NewPostProps = {
 };
 
 export type PostProps = {
-  posts: Post[],
+  posts: Post[];
+  isLoading?: boolean;
 };
+
+export type SpinProps = {
+  className?: string;
+};
+
+export type UserProfilePageProps = {
+  user: User;
+  posts: Post[],
+}

@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { connectToDatabase } from "../../../helpers/connection";
 import { ErrorResponse } from "../../../types/Response";
 import { User } from "../../../types/Base";
+import { toDataTransformedIds } from "../../../helpers/transform";
 
 // extra function for SSR
 export const getUserByEmails = async (emails: string[]) => {
@@ -12,18 +13,10 @@ export const getUserByEmails = async (emails: string[]) => {
 
   const database = client.db();
   const userTable = database.collection("users");
-  const usersRes = (await userTable
-    .find({ email: { $in: emails } })
-    .toArray()).map(item => {
-        console.log('item._id.toString()', item._id.toString())
-        return {
-            ...item,
-            _id: item._id.toString()
-        }
-    })
+  const usersRes = await userTable.find({ email: { $in: emails } }).toArray();
+  const usersTransformed = toDataTransformedIds(usersRes as any[]) as User[];
   client.close();
-
-  return usersRes;
+  return usersTransformed;
 };
 
 export default async function handler(

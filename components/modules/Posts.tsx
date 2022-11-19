@@ -1,11 +1,10 @@
 import React from "react";
 import { PostProps } from "../../types/Props";
-import Card from "../Card";
 import Post from "../Post";
 import Skeleton from "../Skeleton";
 
-const Posts = ({ posts }: PostProps) => {
-  if (!posts?.length) {
+const Posts = ({ posts, isLoading }: PostProps) => {
+  if (isLoading) {
     return <Skeleton />;
   }
 

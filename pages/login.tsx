@@ -12,22 +12,25 @@ import { LoginPageProps } from "../types/Props";
 import { User } from "../types/Base";
 import { useForm } from "react-hook-form";
 import Input from "../components/Input";
-import { EMAIL_PATTERN } from "../utils/constants";
+import { DEFAULT_AVATAR, EMAIL_PATTERN, ERROR_MESSAGES } from "../utils/constants";
 import { useRouter } from "next/router";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import Logo from "../components/Logo";
 import { toast } from "react-toastify";
 import ModalRegister from "../components/modules/ModalRegister";
 import Head from "next/head";
-import getPastUsersLogin, { getUserByEmails } from "./api/user/past-login";
+import { getUserByEmails } from "./api/user/past-login";
 import Button from "../components/Button";
 
 const LoginPage = ({ users }: LoginPageProps) => {
-  const [recentUsers, setRecentUsers] = useState<User[]>(users);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showRegisterForm, setShowRegisterForm] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLoadingRegister, setIsLoadingRegister] = useState<boolean>(false);
+  const [isErrorInCorrectPasswordModal, setIsErrorIncorrectPasswordModal] =
+    useState<boolean>(false);
+    const [isErrorInCorrectPasswordForm, setIsErrorIncorrectPasswordForm] =
+    useState<boolean>(false);
   const [isLoadingSubmitLoginModal, setIsLoadingSubmitLoginModal] =
     useState<boolean>(false);
 
@@ -42,53 +45,72 @@ const LoginPage = ({ users }: LoginPageProps) => {
     if (isLoading || isLoadingSubmitLoginModal) {
       return;
     }
+    setIsErrorIncorrectPasswordModal(false);
+    setIsErrorIncorrectPasswordForm(false);
     const response = await signIn("credentials", {
       redirect: false,
       ...data,
     });
+
     if (response?.ok) {
       localStorage.setItem("user", JSON.stringify(data));
       router.push("/");
     }
+    return response;
   };
 
   const onSubmitLoginModal = async (password: string) => {
     setIsLoadingSubmitLoginModal(true);
-    await onLogin({ ...selectedUser, password });
+    setIsErrorIncorrectPasswordModal(false);
+    const result = await onLogin({ ...selectedUser, password });
+    setIsErrorIncorrectPasswordModal(!!result?.error && result.status === 401);
     setIsLoadingSubmitLoginModal(false);
   };
 
   const onSubmitLogin = async (data: User) => {
-    console.log("call lan nua");
     setIsLoading(true);
-    await onLogin(data);
+    setIsErrorIncorrectPasswordForm(false);
+    const result = await onLogin(data);
+    setIsErrorIncorrectPasswordForm(!!result?.error && result.status === 401);
     setIsLoading(false);
   };
 
-  const onRegister = async (data: User) => {
+  const onRegister = async (data: User, callback?: (msg: string) => void) => {
     //TODO: remove hard-code avatar here when had implemented feature upload an avatar
     setIsLoadingRegister(true);
     return fetch("/api/user/register", {
       body: JSON.stringify({
         ...data,
-        avatar:
-          "https://s3.amazonaws.com/prod.skimble/photos/29359/hstzsdw4avx_iphone.gif",
+        avatar: DEFAULT_AVATAR,
       }),
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
     })
-      .then((res) => {
-        if (res.status === 201) {
+      .then(async (res) => {
+        if ( res.ok) {
           toast.success("Successfully Register!");
           setShowRegisterForm(false);
+          return;
         }
+       return Promise.reject(res);
+      }).catch(async (error) => {
+        const errorMsg = await error.json();
+        callback?.(errorMsg?.message);
       })
       .finally(() => {
         setIsLoadingRegister(false);
       });
   };
+
+  const onShowLoginForm = () => {
+    if(isLoading){
+      return;
+    }
+
+    setShowRegisterForm(true);
+  }
 
   return (
     <>
@@ -103,14 +125,11 @@ const LoginPage = ({ users }: LoginPageProps) => {
         <LoginRecentWrap>
           <LoginRecentForm>
             <Logo />
-            {recentUsers?.length ? (
+            {users?.length ? (
               <>
                 <h2 className="pt-5 text-2xl">Recent logins</h2>
                 <p>Click your picture or add an account.</p>
-                <RecentUser
-                  users={recentUsers}
-                  setSelectedUser={setSelectedUser}
-                />
+                <RecentUser users={users} setSelectedUser={setSelectedUser} />
               </>
             ) : (
               <p className="pt-5 text-4xl">
@@ -142,7 +161,7 @@ const LoginPage = ({ users }: LoginPageProps) => {
             <Input
               type="password"
               placeholder="Password"
-              errorText={errors.password?.message}
+              errorText={errors.password?.message || (isErrorInCorrectPasswordForm ? ERROR_MESSAGES.incorrectPassword : '')}
               className="mt-4"
               registerForm={{
                 ...register("password", {
@@ -163,9 +182,10 @@ const LoginPage = ({ users }: LoginPageProps) => {
             <div className="divide-y h-[1px] divide-slate-700 border-b pt-2" />
             <Button
               title="Create New Account"
+              buttonType="secondary"
               disabled={showRegisterForm}
-              className="w-fit mt-4 ml-auto mr-auto text-white bg-[#42b72a] hover:bg-[#36a420] flex"
-              onClick={() => setShowRegisterForm(true)}
+              className="w-fit mt-4 ml-auto mr-auto flex"
+              onClick={onShowLoginForm}
             />
           </LoginForm>
         </LoginRecentWrap>
@@ -175,6 +195,7 @@ const LoginPage = ({ users }: LoginPageProps) => {
               user={selectedUser}
               onLogin={onSubmitLoginModal}
               loading={isLoadingSubmitLoginModal}
+              isErrorInCorrectPasswordModal={isErrorInCorrectPasswordModal}
             />
           </Modal>
         )}
@@ -195,13 +216,30 @@ const LoginPage = ({ users }: LoginPageProps) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const { users: emails } = context.req.cookies;
+export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
+  const { users: emails } = req.cookies;  //cached user logged in
+  res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=600, stale-while-revalidate=1800'
+  )
+
+  const session = await getSession({req});
+  if(session){
+    return {
+      props: {
+
+      },
+      redirect: {
+        destination: '/',
+      }
+    }
+  }
+
   try {
     const usersDataRes = await getUserByEmails(JSON.parse(emails || "[]"));
     return {
       props: {
-        users: usersDataRes,
+        users: usersDataRes.map(({password, ...restField}) => restField),
       },
     };
   } catch (error) {

@@ -4,7 +4,8 @@ import InputSearch from "../InputSearch";
 import Logo from "../Logo";
 import AvatarDropdown from "../AvatarDropdown";
 import { signOut, useSession } from "next-auth/react";
-import { User } from "next-auth";
+import { User } from "../../types/Base";
+import { DEFAULT_AVATAR } from "../../utils/constants";
 
 function MainNavigation() {
   const router = useRouter();
@@ -37,7 +38,7 @@ function MainNavigation() {
             {
               id: "1",
               text: "View your profile",
-              onClick: () => router.push(`/profile`),
+              onClick: () => router.push(`/${user.id}`),
             },
             {
               id: "2",
@@ -45,7 +46,7 @@ function MainNavigation() {
               onClick: onSignOut,
             },
           ]}
-          avatar={""}
+          avatar={user?.avatar || DEFAULT_AVATAR}
         />}
       </div>
     </nav>

@@ -54,7 +54,7 @@ export default async function handler(
   const existedEmail = await userTable.findOne({ email });
   if (existedEmail) {
     client.close();
-    return res.status(409).json({ message: "email is existed" });
+    return res.status(409).json({ message: "Email is existed, please use another email address" });
   }
 
   const passwordEncrypted = await hashData(password, 12);

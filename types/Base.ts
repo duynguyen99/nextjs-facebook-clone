@@ -6,7 +6,6 @@ export type DropdownItem = {
 
 export interface User {
     avatar?: string,
-    name?: string,
     id?: string,
     _id?: string,
     fullName?: string,
@@ -15,7 +14,7 @@ export interface User {
     rePassword?: string,
 }
 
-export interface Post {
+export interface Post extends User {
     content: string,
     _id: string,
     userId: string,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ModalRegisterProps } from "../../types/Props";
 import { User } from "../../types/Base";
@@ -15,11 +15,21 @@ function ModalRegister({ onRegister, loading }: ModalRegisterProps) {
     formState: { errors },
   } = useForm<User>();
 
+  const [errorMsg, setErrorMsg] = useState<string>();
+
   const onSubmitForm = (data: User) => {
-    onRegister(data);
+    setErrorMsg('');
+    onRegister(data, (msg) => {
+      setErrorMsg(msg);
+    });
   };
 
   const watchAll = watch();
+
+  const isFullFill = useMemo(() => {
+    const {email, password, rePassword, fullName} = watchAll;
+    return email && password && rePassword && fullName;
+  }, [watchAll])
   return (
     <LoginRegisterForm>
       <form onSubmit={handleSubmit(onSubmitForm)}>
@@ -35,7 +45,7 @@ function ModalRegister({ onRegister, loading }: ModalRegisterProps) {
               },
             }),
           }}
-          className="w-80"
+          className="w-96"
         />
         <Input
           type="email"
@@ -53,7 +63,7 @@ function ModalRegister({ onRegister, loading }: ModalRegisterProps) {
               },
             }),
           }}
-          className="w-80 mt-4"
+          className="w-96 mt-4"
         />
         <Input
           type="password"
@@ -73,6 +83,10 @@ function ModalRegister({ onRegister, loading }: ModalRegisterProps) {
                 isNotMatchingPassword: (data: string | undefined) =>
                   data === watchAll.rePassword,
               },
+              minLength: {
+                value: 7,
+                message: 'Password must great than 7 character'
+              }
             }),
           }}
         />
@@ -94,13 +108,19 @@ function ModalRegister({ onRegister, loading }: ModalRegisterProps) {
                 isNotMatchingRePassword: (data: string | undefined) =>
                   data === watchAll.password,
               },
+              minLength: {
+                value: 7,
+                message: 'Password must great than 7 character'
+              }
             }),
           }}
         />
+         {errorMsg && <div className="text-red-600 mt-2">{errorMsg}</div>}
         <Button
           title="Sign Up"
-          className="w-fit mt-4 ml-auto mr-auto text-xl flex bg-[#42b72a] hover:bg-[#36a420]"
-          disabled={loading}
+          buttonType="secondary"
+          className="w-fit mt-4 ml-auto mr-auto text-xl flex"
+          disabled={loading || !isFullFill}
           loading={loading}
           type="submit"
         />
