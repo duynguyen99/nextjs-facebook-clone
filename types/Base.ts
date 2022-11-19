@@ -19,3 +19,8 @@ export interface Post extends User {
     _id: string,
     userId: string,
 }
+
+export interface FormLogin {
+    email?: string;
+    password: string;
+  }

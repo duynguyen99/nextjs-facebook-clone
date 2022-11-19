@@ -45,7 +45,7 @@ function ModalRegister({ onRegister, loading }: ModalRegisterProps) {
               },
             }),
           }}
-          className="w-96"
+          className="md:w-96 w-64"
         />
         <Input
           type="email"
@@ -63,7 +63,7 @@ function ModalRegister({ onRegister, loading }: ModalRegisterProps) {
               },
             }),
           }}
-          className="w-96 mt-4"
+          className="md:w-96 w-full mt-4"
         />
         <Input
           type="password"

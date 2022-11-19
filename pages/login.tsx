@@ -9,10 +9,14 @@ import Modal from "../components/Modal";
 import ModalLogin from "../components/modules/ModalLogin";
 import RecentUser from "../components/RecentUser";
 import { LoginPageProps } from "../types/Props";
-import { User } from "../types/Base";
+import { FormLogin, User } from "../types/Base";
 import { useForm } from "react-hook-form";
 import Input from "../components/Input";
-import { DEFAULT_AVATAR, EMAIL_PATTERN, ERROR_MESSAGES } from "../utils/constants";
+import {
+  DEFAULT_AVATAR,
+  EMAIL_PATTERN,
+  ERROR_MESSAGES,
+} from "../utils/constants";
 import { useRouter } from "next/router";
 import { getSession, signIn } from "next-auth/react";
 import Logo from "../components/Logo";
@@ -29,7 +33,7 @@ const LoginPage = ({ users }: LoginPageProps) => {
   const [isLoadingRegister, setIsLoadingRegister] = useState<boolean>(false);
   const [isErrorInCorrectPasswordModal, setIsErrorIncorrectPasswordModal] =
     useState<boolean>(false);
-    const [isErrorInCorrectPasswordForm, setIsErrorIncorrectPasswordForm] =
+  const [isErrorInCorrectPasswordForm, setIsErrorIncorrectPasswordForm] =
     useState<boolean>(false);
   const [isLoadingSubmitLoginModal, setIsLoadingSubmitLoginModal] =
     useState<boolean>(false);
@@ -53,13 +57,12 @@ const LoginPage = ({ users }: LoginPageProps) => {
     });
 
     if (response?.ok) {
-      localStorage.setItem("user", JSON.stringify(data));
       router.push("/");
     }
     return response;
   };
 
-  const onSubmitLoginModal = async (password: string) => {
+  const onSubmitLoginModal = async ({ password }: FormLogin) => {
     setIsLoadingSubmitLoginModal(true);
     setIsErrorIncorrectPasswordModal(false);
     const result = await onLogin({ ...selectedUser, password });
@@ -89,13 +92,14 @@ const LoginPage = ({ users }: LoginPageProps) => {
       },
     })
       .then(async (res) => {
-        if ( res.ok) {
+        if (res.ok) {
           toast.success("Successfully Register!");
           setShowRegisterForm(false);
           return;
         }
-       return Promise.reject(res);
-      }).catch(async (error) => {
+        return Promise.reject(res);
+      })
+      .catch(async (error) => {
         const errorMsg = await error.json();
         callback?.(errorMsg?.message);
       })
@@ -105,12 +109,12 @@ const LoginPage = ({ users }: LoginPageProps) => {
   };
 
   const onShowLoginForm = () => {
-    if(isLoading){
+    if (isLoading) {
       return;
     }
 
     setShowRegisterForm(true);
-  }
+  };
 
   return (
     <>
@@ -127,8 +131,8 @@ const LoginPage = ({ users }: LoginPageProps) => {
             <Logo />
             {users?.length ? (
               <>
-                <h2 className="pt-5 text-2xl">Recent logins</h2>
-                <p>Click your picture or add an account.</p>
+                <h2 className="pt-5 text-2xl text-center md:text-left">Recent logins</h2>
+                <p className="text-center md:text-left">Click your picture or add an account.</p>
                 <RecentUser users={users} setSelectedUser={setSelectedUser} />
               </>
             ) : (
@@ -161,7 +165,12 @@ const LoginPage = ({ users }: LoginPageProps) => {
             <Input
               type="password"
               placeholder="Password"
-              errorText={errors.password?.message || (isErrorInCorrectPasswordForm ? ERROR_MESSAGES.incorrectPassword : '')}
+              errorText={
+                errors.password?.message ||
+                (isErrorInCorrectPasswordForm
+                  ? ERROR_MESSAGES.incorrectPassword
+                  : "")
+              }
               className="mt-4"
               registerForm={{
                 ...register("password", {
@@ -216,30 +225,28 @@ const LoginPage = ({ users }: LoginPageProps) => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
-  const { users: emails } = req.cookies;  //cached user logged in
+export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
+  const { users: emails } = req.cookies; //cached user logged in
   res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=600, stale-while-revalidate=1800'
-  )
+    "Cache-Control",
+    "public, s-maxage=600, stale-while-revalidate=1800"
+  );
 
-  const session = await getSession({req});
-  if(session){
+  const session = await getSession({ req });
+  if (session) {
     return {
-      props: {
-
-      },
+      props: {},
       redirect: {
-        destination: '/',
-      }
-    }
+        destination: "/",
+      },
+    };
   }
 
   try {
     const usersDataRes = await getUserByEmails(JSON.parse(emails || "[]"));
     return {
       props: {
-        users: usersDataRes.map(({password, ...restField}) => restField),
+        users: usersDataRes.map(({ password, ...restField }) => restField),
       },
     };
   } catch (error) {

@@ -5,5 +5,5 @@ export const HomeLayout = (props: LayoutProps) => {
 };
 
 export const HomePost = (props: LayoutProps) => {
-    return <div className="w-1/3 m-auto h-auto">{props.children}</div>;
+    return <div className="w-full md:w-2/4 lg:w-2/4 xl:w-2/5 m-auto h-auto">{props.children}</div>;
   };

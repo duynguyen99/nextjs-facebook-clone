@@ -13,7 +13,7 @@ const Modal = ({
   return (
     <>
       <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-20 outline-none focus:outline-none mw-8">
-        <div className="relative w-auto my-6 mx-auto max-w-3xl">
+        <div className="relative w-auto my-6 mx-auto lg:max-w-3xl max-w-xs">
           <div className="border-0 rounded-md shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
             <div
               className="w-8 h-8 absolute top-2 right-2 rounded-full justify-center bg-slate-200 z-30 hover:bg-slate-400 flex"
@@ -35,7 +35,7 @@ const Modal = ({
                 </div>
               </div>
             )}
-            <div className="relative p-6 flex-auto">{children}</div>
+            <div className={`relative p-6 flex-auto ${hideTitle ? 'pt-4' : ''}`}>{children}</div>
           </div>
         </div>
       </div>

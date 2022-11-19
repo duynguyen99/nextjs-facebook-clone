@@ -28,8 +28,8 @@ const Post = ({ content, avatar, fullName, userId }: Post) => {
           <p className="pl-2 font-semibold">{fullName}</p>
         </div>
       </div>
-      <div className="bg-slate-200 h-80 w-full text-center flex items-center mt-4 rounded-md bg-gradient-to-r from-purple-500 to-pink-500">
-        <div className="w-full font-bold h-20 text-3xl">{content}</div>
+      <div className={`bg-slate-200 h-80 text-center flex items-center mt-4 rounded-md bg-gradient-to-r from-purple-500 to-pink-500`}>
+        <div className="w-full font-bold h-20 lg:text-3xl text-xl">{content}</div>
       </div>
     </Card>
   );

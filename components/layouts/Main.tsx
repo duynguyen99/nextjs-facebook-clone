@@ -15,6 +15,7 @@ function Layout({ children }: LayoutProps) {
       {isShowNavigationBar && <MainNavigation />}
       <main>
         <div className={isShowNavigationBar ? "mt-16" : ""}>{children}</div>
+
       </main>
     </>
   );

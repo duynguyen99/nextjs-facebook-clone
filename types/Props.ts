@@ -1,5 +1,5 @@
 import React, { ButtonHTMLAttributes, InputHTMLAttributes } from "react";
-import { DropdownItem, Post, User } from "./Base";
+import { DropdownItem, FormLogin, Post, User } from "./Base";
 
 export type Metadata = {
   user?: User;
@@ -26,8 +26,8 @@ export type ModalProps = {
 };
 
 export type ModalLoginProps = {
-  user: User;
-  onLogin: (password: string) => void;
+  user?: User;
+  onLogin: (data: FormLogin) => void;
   loading?: boolean;
   isErrorInCorrectPasswordModal?: boolean;
 };
@@ -79,7 +79,7 @@ export type DropdownProps = {
 };
 
 export type NewPostProps = {
-  onAdd: (data: Post, callback: () => void) => void;
+  onAdd: (data: Post, callback: (msg?: string) => void) => void;
 };
 
 export type PostProps = {

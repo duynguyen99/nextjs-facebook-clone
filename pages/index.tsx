@@ -14,7 +14,7 @@ export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoadingGetPosts, setIsLoadingGetPost] = useState<boolean>(false);
 
-  const onAddNewPost = async (data: Post, callback: () => void) => {
+  const onAddNewPost = async (data: Post, callback: (msg?: string) => void) => {
     const response = await createNewPost(data);
     if (response.ok) {
       toast.success("Created Post!");
@@ -23,6 +23,9 @@ export default function HomePage() {
       getAllPosts();
       return;
     }
+
+    const error = await response.json();
+    callback(error.message);
     //TODO: implement handle error here
   };
 

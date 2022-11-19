@@ -1,8 +1,9 @@
 import Image from "next/image";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { FormLogin } from "../../types/Base";
 import { ModalLoginProps } from "../../types/Props";
-import { ERROR_MESSAGES } from "../../utils/constants";
+import { EMAIL_PATTERN, ERROR_MESSAGES } from "../../utils/constants";
 import Button from "../Button";
 import Input from "../Input";
 
@@ -16,19 +17,45 @@ function ModalLogin({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<{ password: string }>();
+  } = useForm<FormLogin>();
+
+  const onSubmitForm = (data: FormLogin) => {
+    onLogin(data);
+  };
 
   return (
     <div className="flex flex-col items-center">
-      <Image
-        src={user?.avatar || ""}
-        width={500}
-        height={500}
-        alt="avatar"
-        className="rounded-full w-40 h-40"
-      />
-      <div className="mt-2">{user?.fullName}</div>
-      <div className="mt-4 w-96 flex flex-col items-center">
+      {user && (
+        <Image
+          src={user?.avatar || ""}
+          width={500}
+          height={500}
+          alt="avatar"
+          className="rounded-full w-40 h-40"
+        />
+      )}
+      {user && <div className="mt-2">{user?.fullName}</div>}
+      <div className="mt-4 lg:w-96 w-52 flex flex-col items-center">
+        {!user && (
+          <Input
+            type="email"
+            placeholder="Email"
+            errorText={errors.email?.message}
+            className="mb-4 mt-8"
+            registerForm={{
+              ...register("email", {
+                required: {
+                  value: true,
+                  message: "This field is required.",
+                },
+                pattern: {
+                  value: EMAIL_PATTERN,
+                  message: "Invalid email address.",
+                },
+              }),
+            }}
+          />
+        )}
         <Input
           type="password"
           placeholder="Password"
@@ -50,7 +77,7 @@ function ModalLogin({
           className="mt-4 h-12 w-full text-lg"
           loading={loading}
           disabled={loading}
-          onClick={handleSubmit((data) => onLogin(data.password))}
+          onClick={handleSubmit(onLogin)}
         />
       </div>
     </div>

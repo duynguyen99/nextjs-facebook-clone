@@ -3,7 +3,7 @@ import { LayoutProps } from "../../types/Props";
 
 const LoginLayout = (props: LayoutProps) => {
   return (
-    <div className="flex bg-slate-200 h-screen sm:flex-col">
+    <div className="flex bg-slate-200 lg:h-screen h-fit sm:flex-col">
       {props.children}
     </div>
   );
@@ -11,7 +11,7 @@ const LoginLayout = (props: LayoutProps) => {
 
 export const LoginRecentWrap = (props: LayoutProps) => {
   return (
-    <div className="flex w-2/3 h-2/3 m-auto flex-col md:flex-row p-8">
+    <div className="flex w-full h-full sm:h-fit md:h-fit xl:w-2/3 lg:h-2/3 m-auto flex-col md:flex-row p-4 lg:p-8">
       {props.children}
     </div>
   );
@@ -19,17 +19,17 @@ export const LoginRecentWrap = (props: LayoutProps) => {
 
 export const LoginRecentForm = (props: LayoutProps) => {
   return (
-    <div className="flex flex-col w-2/4 pr-32 md:w-full">{props.children}</div>
+    <div className="flex flex-col lg:w-2/4 xxl:pr-32 md:w-full">{props.children}</div>
   );
 };
 
 export const LoginRecentUser = (props: LayoutProps) => {
-  return <div className="flex flex-wrap">{props.children}</div>;
+  return <div className="flex flex-wrap lg:m-0 m-auto md:m-0">{props.children}</div>;
 };
 
 export const LoginForm = (props: LayoutProps) => {
   return (
-    <div className="w-2/4 p-4 bg-white rounded-md h-fit mt-16 shadow-lg">
+    <div className="lg:w-1/3 w-full p-4 bg-white rounded-md h-fit mt-16 shadow-lg max-w-[400px] m-auto">
       {props.children}
     </div>
   );

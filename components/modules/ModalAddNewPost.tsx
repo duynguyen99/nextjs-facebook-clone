@@ -10,27 +10,31 @@ import Modal from "../Modal";
 function ModalAddNewPost({ onSubmit, onCloseModal }: ModalAddNewPostProps) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>();
   const { avatar, fullName } = session?.user as User;
-  const { register, handleSubmit } = useForm<Post>();
-
+  const { register, handleSubmit, watch } = useForm<Post>();
+  const watchAll = watch();
   const onSubmitForm = (data: Post) => {
     setLoading(true);
-    onSubmit(data, () => {
-      onCloseModal();
+    onSubmit(data, (msgError?: string) => {
+      if (!msgError) {
+        onCloseModal();
+      }
       setLoading(false);
+      setError(msgError || "");
     });
   };
   return (
     <Modal
       onClose={onCloseModal}
       title={"Create new Post"}
-      titleClassName={"text-2xl"}
+      titleClassName={"lg:text-2xl text-lg pt-2 lg:pt-0"}
     >
-      <div className="flex flex-col w-96">
+      <div className="flex flex-col lg:w-96 w-64">
         <div className="flex-row flex items-center">
           <div>
             <Image
-              src={avatar || ''}
+              src={avatar || ""}
               width={500}
               height={500}
               alt="avatar"
@@ -48,13 +52,14 @@ function ModalAddNewPost({ onSubmit, onCloseModal }: ModalAddNewPostProps) {
           className="mt-4 block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           placeholder="Write your thoughts here..."
           {...register("content")}
-        ></textarea>
+        />
+        {error && <div className="text-red-600 mt-2">{error}</div>}
         <div className="w-full flex mt-6">
           <Button
             title={loading ? "Creating" : "Create"}
             className="w-fit ml-auto"
             loading={loading}
-            disabled={loading}
+            disabled={loading || !watchAll.content}
             onClick={handleSubmit(onSubmitForm)}
           />
         </div>

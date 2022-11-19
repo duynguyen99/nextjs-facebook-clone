@@ -21,7 +21,7 @@ const NewPost = ({ onAdd }: NewPostProps) => {
             className="rounded-full w-10 h-10 cursor-pointer"
           />
           <div
-            className="rounded-full bg-slate-200 w-full ml-2 p-2 pl-4 hover:bg-slate-400 cursor-pointer border-2"
+            className="rounded-full bg-slate-200 w-full ml-2 p-2 pl-4 hover:bg-slate-400 cursor-pointer border-2 text-xs lg:text-base"
             onClick={() => setShowModalAddNewPost(true)}
           >
             Hey {user?.fullName}, what are you thinking?
