@@ -24,7 +24,7 @@ export default function App({ Component, pageProps }: AppProps) {
     Router.events.on("routeChangeError", (url) => {
       setIsLoading(false);
     });
-  }, [Router]);
+  }, []);
 
   return (
     <SessionProvider session={session}>
