@@ -46,10 +46,10 @@ const UserProfilePage = ({ user, posts }: UserProfilePageProps) => {
   const postsRender = useMemo(() => {
     return userPosts.map((post) => ({
       ...post,
-      avatar: user.avatar,
-      fullName: user.fullName,
+      avatar: user?.avatar,
+      fullName: user?.fullName,
     }));
-  }, [user.avatar, user.fullName, userPosts]);
+  }, [user?.avatar, user?.fullName, userPosts]);
   return (
     <>
       <Head>
@@ -71,6 +71,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
   const { userId } = params as { userId: string };
   const user = await findUserById(userId);
   const posts = await getUserPostsById(userId);
+
   return {
     props: {
       user,
@@ -85,7 +86,7 @@ export async function getStaticPaths() {
   const userIds = users.map((user) => user._id);
   return {
     paths: userIds.map((userId) => ({ params: { userId } })),
-    fallback: false,
+    fallback: "blocking",
   };
 }
 

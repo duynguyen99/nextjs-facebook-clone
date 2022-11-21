@@ -12,6 +12,7 @@ import Loading from "../components/Loading";
 export default function App({ Component, pageProps }: AppProps) {
   const { session, ...restProps } = pageProps;
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
   useEffect(() => {
     Router.events.on("routeChangeStart", (url) => {
       setIsLoading(true);

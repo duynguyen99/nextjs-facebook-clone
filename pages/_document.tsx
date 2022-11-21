@@ -1,5 +1,5 @@
 import { Html, Head, Main, NextScript } from "next/document";
-// TODO: override default document when 
+// TODO: override default document when use it
 function Document() {
   return (
     <Html>
