@@ -12,6 +12,7 @@ import { createNewPost, getUserPosts } from "../helpers/api";
 import { Post, User } from "../types/Base";
 import { useSession } from "next-auth/react";
 import { getUserPostsById } from "./api/post/list";
+
 const UserProfilePage = ({ user, posts }: UserProfilePageProps) => {
   const { data: session } = useSession();
   const sessionUser = session?.user as User;
@@ -50,6 +51,7 @@ const UserProfilePage = ({ user, posts }: UserProfilePageProps) => {
       fullName: user?.fullName,
     }));
   }, [user?.avatar, user?.fullName, userPosts]);
+  
   return (
     <>
       <Head>
@@ -70,6 +72,8 @@ export const getStaticProps: GetStaticProps = async (context) => {
 
   const { userId } = params as { userId: string };
   const user = await findUserById(userId);
+  delete user.password;
+
   const posts = await getUserPostsById(userId);
 
   return {
@@ -83,9 +87,16 @@ export const getStaticProps: GetStaticProps = async (context) => {
 
 export async function getStaticPaths() {
   const users = await getUsers();
-  const userIds = users.map((user) => user._id);
+  const paths = users.map((user) => {
+    return {
+      params: {
+        userId: user._id,
+        anything: 'anything'
+      }
+    }
+  });
   return {
-    paths: userIds.map((userId) => ({ params: { userId } })),
+    paths,
     fallback: "blocking",
   };
 }

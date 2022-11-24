@@ -22,6 +22,22 @@ export const getUserPostsById = async (userId: string) => {
   return postsTransformed;
 };
 
+export const getAllPosts = async () => {
+  const client = await connectToDatabase();
+  if (!client) {
+    throw new Error("Can not connect to database");
+  }
+
+  const database = client.db();
+  const postTable = database.collection("posts");
+  const posts = await postTable.find({}).toArray();
+  const postsTransformed = toDataTransformedIds(
+    posts as any
+  ) as unknown as Post[];
+  client.close();
+  return postsTransformed;
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Post[] | ErrorResponse>

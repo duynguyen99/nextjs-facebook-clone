@@ -40,6 +40,7 @@ export default function HomePage() {
   useEffect(() => {
     getAllPosts();
   }, []);
+
   return (
     <>
       <Head>
@@ -55,13 +56,9 @@ export default function HomePage() {
   );
 }
 
+
 export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
-  const session = await getSession({ req: req });
-  //cache data
-  res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=10, stale-while-revalidate=59'
-  )
+  const session = await getSession({ req });
   if (!session) {
     return {
       redirect: {
