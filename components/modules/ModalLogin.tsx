@@ -19,8 +19,10 @@ function ModalLogin({
     formState: { errors },
   } = useForm<FormLogin>();
 
-  const onSubmitForm = (data: FormLogin) => {
-    onLogin(data);
+  const onKeyUpLogin = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSubmit(onLogin)();
+    }
   };
 
   return (
@@ -59,6 +61,7 @@ function ModalLogin({
         <Input
           type="password"
           placeholder="Password"
+          onKeyUp={onKeyUpLogin}
           errorText={
             errors?.password
               ? "Password is required"

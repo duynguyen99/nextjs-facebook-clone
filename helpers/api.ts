@@ -1,12 +1,10 @@
 import { Post } from "../types/Base";
 
 export const getUserById = async (id: string): Promise<Response> => {
-  const response = await fetch("/api/user/info", {
-    body: JSON.stringify({ id }),
+  const response = await fetch(`/api/user/${id}`, {
     headers: {
       "Content-Type": "application/json",
     },
-    method: "POST",
   });
   return response;
 };

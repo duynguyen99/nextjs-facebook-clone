@@ -1,10 +1,10 @@
 import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
-import { connectToDatabase } from "../../../helpers/connection";
-import { toDataTransformedIds } from "../../../helpers/transform";
-import { Post, User } from "../../../types/Base";
-import { ErrorResponse } from "../../../types/Response";
+import { connectToDatabase } from "../../../../helpers/connection";
+import { toDataTransformedIds } from "../../../../helpers/transform";
+import { Post, User } from "../../../../types/Base";
+import { ErrorResponse } from "../../../../types/Response";
 
 export const getUserPostsById = async (userId: string) => {
   const client = await connectToDatabase();

@@ -5,7 +5,7 @@ import { ErrorResponse } from "../../../types/Response";
 import { User } from "../../../types/Base";
 import { compare } from "bcrypt";
 
-export default async function handler(
+export default async function handlerLogin(
   req: NextApiRequest,
   res: NextApiResponse<User | ErrorResponse>
 ) {

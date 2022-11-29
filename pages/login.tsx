@@ -1,4 +1,3 @@
-import { GetServerSideProps } from "next";
 import React, { useEffect, useState } from "react";
 import LoginLayout, {
   LoginForm,
@@ -18,15 +17,15 @@ import {
   ERROR_MESSAGES,
 } from "../utils/constants";
 import { useRouter } from "next/router";
-import { getSession, signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Logo from "../components/Logo";
 import { toast } from "react-toastify";
 import ModalRegister from "../components/modules/ModalRegister";
 import Head from "next/head";
-import { getUserByEmails } from "./api/user/past-login";
 import Button from "../components/Button";
+import Skeleton from "../components/Skeleton";
 
-const LoginPage = ({ users }: LoginPageProps) => {
+const LoginPage = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showRegisterForm, setShowRegisterForm] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -37,6 +36,9 @@ const LoginPage = ({ users }: LoginPageProps) => {
     useState<boolean>(false);
   const [isLoadingSubmitLoginModal, setIsLoadingSubmitLoginModal] =
     useState<boolean>(false);
+  const [pastUsers, setPastUsers] = useState<User[] | null>(null);
+  const [isLoadingGetPastUsers, setIsLoadingGetPastUsers] =
+    useState<boolean>(true);
 
   const router = useRouter();
   const {
@@ -57,6 +59,10 @@ const LoginPage = ({ users }: LoginPageProps) => {
     });
 
     if (response?.ok) {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      console.log("users", users);
+      users.push(data.email);
+      localStorage.setItem("users", JSON.stringify(users));
       router.push("/");
     }
     return response;
@@ -116,6 +122,43 @@ const LoginPage = ({ users }: LoginPageProps) => {
     setShowRegisterForm(true);
   };
 
+  const getPastUsersLogin = () => {
+    setIsLoadingGetPastUsers(true);
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    if (!users?.length) {
+      setIsLoadingGetPastUsers(false);
+      return;
+    }
+    fetch("/api/user/past-login", {
+      method: "POST",
+      body: JSON.stringify({ users }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("an error occurred when fetch data past login");
+        }
+        const users = await res.json();
+        setPastUsers(users);
+      })
+      .catch((e) => {})
+      .finally(() => {
+        setIsLoadingGetPastUsers(false);
+      });
+  };
+
+  useEffect(() => {
+    getPastUsersLogin();
+  }, []);
+
+  const onKeyUpLogin = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSubmit(onSubmitLogin)();
+    }
+  };
+
   return (
     <>
       <Head>
@@ -129,11 +172,20 @@ const LoginPage = ({ users }: LoginPageProps) => {
         <LoginRecentWrap>
           <LoginRecentForm>
             <Logo />
-            {users?.length ? (
+            {isLoadingGetPastUsers ? (
+              <Skeleton />
+            ) : pastUsers && pastUsers?.length ? (
               <>
-                <h2 className="pt-5 text-2xl text-center md:text-left">Recent logins</h2>
-                <p className="text-center md:text-left">Click your picture or add an account.</p>
-                <RecentUser users={users} setSelectedUser={setSelectedUser} />
+                <h2 className="pt-5 text-2xl text-center md:text-left">
+                  Recent logins
+                </h2>
+                <p className="text-center md:text-left">
+                  Click your picture or add an account.
+                </p>
+                <RecentUser
+                  users={pastUsers}
+                  setSelectedUser={setSelectedUser}
+                />
               </>
             ) : (
               <p className="pt-5 text-4xl">
@@ -148,6 +200,7 @@ const LoginPage = ({ users }: LoginPageProps) => {
                 type="email"
                 placeholder="Email"
                 errorText={errors.email?.message}
+                onKeyUp={onKeyUpLogin}
                 registerForm={{
                   ...register("email", {
                     required: {
@@ -171,6 +224,7 @@ const LoginPage = ({ users }: LoginPageProps) => {
                   ? ERROR_MESSAGES.incorrectPassword
                   : "")
               }
+              onKeyUp={onKeyUpLogin}
               className="mt-4"
               registerForm={{
                 ...register("password", {
@@ -223,39 +277,6 @@ const LoginPage = ({ users }: LoginPageProps) => {
       </LoginLayout>
     </>
   );
-};
-
-export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
-  const { users: emails } = req.cookies; //cached user logged in
-  res.setHeader(
-    "Cache-Control",
-    "public, s-maxage=600, stale-while-revalidate=1800"
-  );
-
-  const session = await getSession({ req });
-  if (session) {
-    return {
-      props: {},
-      redirect: {
-        destination: "/",
-      },
-    };
-  }
-
-  try {
-    const usersDataRes = await getUserByEmails(JSON.parse(emails || "[]"));
-    return {
-      props: {
-        users: usersDataRes.map(({ password, ...restField }) => restField),
-      },
-    };
-  } catch (error) {
-    return {
-      props: {
-        users: [],
-      },
-    };
-  }
 };
 
 export default LoginPage;

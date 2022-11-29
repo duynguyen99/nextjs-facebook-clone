@@ -1,16 +1,17 @@
 import { GetServerSideProps } from "next";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import { HomeLayout, HomePost } from "../components/layouts/Home";
 import Posts from "../components/modules/Posts";
 import NewPost from "../components/NewPost";
-import { Post } from "../types/Base";
-import Cookies from "cookies";
+import { Post, User } from "../types/Base";
 import { toast } from "react-toastify";
 import { createNewPost } from "../helpers/api";
 
 export default function HomePage() {
+  const { data: session } = useSession();
+  const sessionUser = session?.user as User;
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoadingGetPosts, setIsLoadingGetPost] = useState<boolean>(false);
 
@@ -55,34 +56,3 @@ export default function HomePage() {
     </>
   );
 }
-
-
-export const getServerSideProps: GetServerSideProps = async ({req, res}) => {
-  const session = await getSession({ req });
-  if (!session) {
-    return {
-      redirect: {
-        destination: "/login",
-      },
-      props: {},
-    };
-  }
-
-  const email = session?.user?.email;
-  if (email) {
-    const cookies = new Cookies(req, res);
-    const users = cookies.get("users");
-    const usersJson = JSON.parse(users || "[]") as string[];
-    const isExisted = usersJson.find((userEmail) => userEmail === email);
-
-    if (!isExisted) {
-      const usersCaching = [...usersJson, email];
-      cookies.set("users", JSON.stringify(usersCaching));
-    }
-  }
-  return {
-    props: {
-      session,
-    },
-  };
-};
