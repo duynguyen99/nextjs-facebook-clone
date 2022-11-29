@@ -7,6 +7,4 @@ export default async function handler(
   res: NextApiResponse<User | ErrorResponse>
 ) {
   const { slug, userId } = req.query;
-  console.log('slug: ', slug);
-  console.log('userId: ', userId);
 }

@@ -60,7 +60,7 @@ const LoginPage = () => {
 
     if (response?.ok) {
       const users = JSON.parse(localStorage.getItem("users") || "[]");
-      console.log("users", users);
+
       users.push(data.email);
       localStorage.setItem("users", JSON.stringify(users));
       router.push("/");

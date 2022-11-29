@@ -26,8 +26,7 @@ export default async function handler(
     });
   }
 
-  console.log('req.body', req.body.users)
-  const  users  = req.body.users;
+  const users = req.body.users;
   if (!users || !users.length) {
     return res.status(400).json({
       message: "users array can not empty",
