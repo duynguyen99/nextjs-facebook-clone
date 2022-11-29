@@ -67,12 +67,21 @@ const UserProfilePage = ({ user, posts }: UserProfilePageProps) => {
   );
 };
 
+export default UserProfilePage;
+
 export const getStaticProps: GetStaticProps = async (context) => {
   const { params } = context;
 
   const { userId } = params as { userId: string };
   const user = await findUserById(userId);
-  delete user.password;
+  if(!user){
+    return {
+      props: {},
+      notFound: true,
+    }
+  }
+
+  delete user?.password;
 
   const posts = await getUserPostsById(userId);
 
@@ -100,5 +109,3 @@ export async function getStaticPaths() {
     fallback: "blocking",
   };
 }
-
-export default UserProfilePage;
