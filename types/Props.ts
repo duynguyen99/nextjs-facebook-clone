@@ -95,3 +95,13 @@ export type UserProfilePageProps = {
   user: User;
   posts: Post[],
 }
+
+export enum ToggleType {
+  GRAPHQL,
+  RESTFUL
+}
+
+export type ToggleProps = {
+  type: ToggleType
+  onToggle: (type: ToggleType) => void
+}

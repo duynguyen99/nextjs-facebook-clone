@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import InputSearch from "../InputSearch";
 import Logo from "../Logo";
 import AvatarDropdown from "../AvatarDropdown";
@@ -9,14 +9,24 @@ import { DEFAULT_AVATAR } from "../../utils/constants";
 import ModalLogin from "../modules/ModalLogin";
 import Modal from "../Modal";
 import Button from "../Button";
+import Toggle from "../Toggle";
+import { ToggleType } from "../../types/Props";
+import { RequestContext } from "./Main";
 
 function MainNavigation() {
   const router = useRouter();
+  const {requestType, setRequestType} = useContext(RequestContext);
   const [isLoadingModal, setIsLoadingModal] = useState<boolean>(false);
   const [isShowModalLogin, setIsShowModalLogin] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
+  const [type, setType] = useState<ToggleType>(ToggleType.RESTFUL);
   const { data: session, status } = useSession();
   const user = session?.user as User;
+
+  console.log('setRequestType', setRequestType)
+  const onTypeChange = (type: ToggleType) => {
+    setRequestType?.(type)
+  }
 
   const onSignOut = async () => {
     const response = await signOut({ redirect: false });
@@ -51,10 +61,15 @@ function MainNavigation() {
   return (
     <nav className="h-16 bg-white fixed top-0 w-full bg-white shadow-sm">
       <div className="p-4 pt-3 flex flex-row w-full place-content-between">
-        <Logo
-          className={`text-3xl ${session ? "cursor-pointer" : ""}`}
-          onClick={onRedirectToHomePage}
-        />
+        <div className="flex-row flex items-center">
+          <Logo
+            className={`text-3xl ${session ? "cursor-pointer" : ""}`}
+            onClick={onRedirectToHomePage}
+          />
+          <div className="ml-4 pt-2">
+            <Toggle type={requestType} onToggle={onTypeChange}/>
+          </div>
+        </div>
         <div className="space-x-10 flex lg:w-1/3 w-2/4 lg:pr-20 lg:text-base">
           <InputSearch
             className="h-10 rounded-full"

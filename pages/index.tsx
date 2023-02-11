@@ -1,45 +1,45 @@
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { HomeLayout, HomePost } from "../components/layouts/Home";
 import Posts from "../components/modules/Posts";
 import NewPost from "../components/NewPost";
 import { Post } from "../types/Base";
 import Cookies from "cookies";
 import { toast } from "react-toastify";
-import { createNewPost } from "../helpers/api";
+import useRequest from "../hooks/useRequest";
 
 export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoadingGetPosts, setIsLoadingGetPost] = useState<boolean>(false);
+  const request = useRequest();
 
   const onAddNewPost = async (data: Post, callback: (msg?: string) => void) => {
-    const response = await createNewPost(data);
-    if (response.ok) {
+    const response = await request.createNewPost(data);
+    if (response) {
       toast.success("Created Post!");
       callback();
       setPosts([]);
       getAllPosts();
       return;
     }
-
-    const error = await response.json();
-    callback(error.message);
     //TODO: implement handle error here
   };
 
-  const getAllPosts = async () => {
-    setIsLoadingGetPost(true);
-    const res = await fetch("/api/post/list");
-    const resJson = await res.json();
-    setIsLoadingGetPost(false);
-    setPosts(resJson);
-  };
+  const getAllPosts = useCallback(async () => {
+    if(request.getAllPosts){
+      setIsLoadingGetPost(true);
+      const res = await request?.getAllPosts();
+      setIsLoadingGetPost(false);
+      setPosts(res);
+    }
+  
+  }, [request]);
 
   useEffect(() => {
     getAllPosts();
-  }, []);
+  }, [getAllPosts]);
 
   return (
     <>

@@ -12,20 +12,20 @@ import { createNewPost, getUserPosts } from "../helpers/api";
 import { Post, User } from "../types/Base";
 import { useSession } from "next-auth/react";
 import { getUserPostsById } from "./api/post/list";
+import useRequest from "../hooks/useRequest";
 
 const UserProfilePage = ({ user, posts }: UserProfilePageProps) => {
   const { data: session } = useSession();
   const sessionUser = session?.user as User;
   const [isLoadingGetPosts, setIsLoadingGetPost] = useState<boolean>(false);
   const [userPosts, setUserPosts] = useState<Post[]>(posts);
-
+  const request = useRequest()
   const getAllPosts = async () => {
     setIsLoadingGetPost(true);
-    const res = await getUserPosts(user.id || "");
-    if (res.ok) {
-      const postsJson = (await res.json()) as Post[];
+    const posts = await request.getUserPosts(user.id || "");
+    if (posts) {
       setIsLoadingGetPost(false);
-      setUserPosts(postsJson);
+      setUserPosts(posts);
       return;
     }
     //TODO: implement handle error here
@@ -43,14 +43,15 @@ const UserProfilePage = ({ user, posts }: UserProfilePageProps) => {
     //TODO: implement handle error here
   };
 
-  const isAuthorized = sessionUser && sessionUser.id === user.id;
+  const isAuthorized = sessionUser?.id === user.id;
   const postsRender = useMemo(() => {
     return userPosts.map((post) => ({
       ...post,
       avatar: user?.avatar,
       fullName: user?.fullName,
-    }));
-  }, [user?.avatar, user?.fullName, userPosts]);
+      author: user
+    })).reverse();
+  }, [user, userPosts]);
   
   return (
     <>
@@ -84,7 +85,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
   delete user?.password;
 
   const posts = await getUserPostsById(userId);
-
+  console.log('posts', posts)
   return {
     props: {
       user,
@@ -100,7 +101,6 @@ export async function getStaticPaths() {
     return {
       params: {
         userId: user._id,
-        anything: 'anything'
       }
     }
   });

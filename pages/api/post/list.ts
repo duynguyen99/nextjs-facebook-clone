@@ -74,11 +74,11 @@ export default async function handler(
   const usersTransformed = toDataTransformedIds(users as any) as User[];
   const postsResult = posts.map((post) => {
     const user = usersTransformed.find((user) => user._id === post.userId);
-
+    
     delete user?.password;
     return {
       ...post,
-      ...user,
+      author: user
     };
   });
 
